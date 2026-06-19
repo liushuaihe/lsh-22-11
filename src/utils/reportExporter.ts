@@ -23,7 +23,7 @@ export function generateReportText(data: ReportData): string {
   const totalStock = skus.reduce((sum, s) => sum + s.totalStock, 0);
   const totalSKUs = skus.length;
   const totalBatches = batches.length;
-  const warningBatches = batches.filter(b => b.status === 'warning' && !b.isFrozen).length;
+  const warningBatches = batches.filter(b => b.status === 'warning').length;
   const frozenBatches = batches.filter(b => b.isFrozen).length;
   const expiredBatches = batches.filter(b => b.status === 'expired').length;
   const unreadAlerts = alerts.filter(a => !a.isRead).length;
@@ -43,13 +43,14 @@ export function generateReportText(data: ReportData): string {
   lines.push('───────────────────────────────────────────────────────────────');
   lines.push('  二、临期批次明细');
   lines.push('───────────────────────────────────────────────────────────────');
-  const warningBatchList = batches.filter(b => b.status === 'warning' && !b.isFrozen);
+  const warningBatchList = batches.filter(b => b.status === 'warning');
   if (warningBatchList.length === 0) {
     lines.push('  暂无临期批次');
   } else {
     warningBatchList.forEach((batch, index) => {
       const sku = skus.find(s => s.id === batch.skuId);
-      lines.push(`  ${index + 1}. 批次号：${batch.batchNo}`);
+      const frozenTag = batch.isFrozen ? ' [已冻结]' : '';
+      lines.push(`  ${index + 1}. 批次号：${batch.batchNo}${frozenTag}`);
       lines.push(`     商品：${sku?.name || batch.skuId}（${sku?.skuCode || ''}）`);
       lines.push(`     生产日期：${formatDate(batch.productionDate)}`);
       lines.push(`     过期日期：${formatDate(batch.expiryDate)}`);
